@@ -57,6 +57,21 @@ public class UserController {
         return userService.userLogin(userAccount, userPassword, request);
     }
 
+    @GetMapping("/current")
+    public User getCurrentUser(HttpServletRequest request) {
+        Object userObj = request.getSession().getAttribute(USER_LOGIN_STATE); // 获取用户的登录态
+        User currentUser = (User) userObj;
+        if (currentUser == null) {
+            return null;
+        }
+        Long userId = currentUser.getId();
+        User user = userService.getById(userId);
+        return userService.getSafetyUser(user);
+        // Session 中的 currentUser 可能过时: currentUser 对象是从 HttpSession 中获取的。Session 是一种缓存机制，用户登录信息会被存储在 Session 中，以便在后续请求中快速识别用户身份，而无需每次都重新验证。
+        // 数据库数据可能已更新: 在用户登录后，数据库中的用户信息可能发生变化（例如，用户修改了个人资料、权限被更改、账户状态被禁用等等）。Session 中存储的 currentUser 对象可能没有反映这些最新的数据库更改。
+        // userService.getById(userId) 重新从数据库获取最新数据: 通过 userService.getById(userId)，代码会根据从 Session 中获取的 userId 再次查询数据库。这确保了返回的 user 对象总是最新的数据库记录，反映了用户信息的最新状态。
+    }
+
     @GetMapping("/search")
     public List<User> searchUsers(String username, HttpServletRequest request) {
         if (!isAdmin(request)) {
