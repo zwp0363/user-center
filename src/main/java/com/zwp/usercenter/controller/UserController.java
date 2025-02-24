@@ -1,6 +1,10 @@
 package com.zwp.usercenter.controller;
 
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
+import com.zwp.usercenter.common.BaseResponse;
+import com.zwp.usercenter.common.ErrorCode;
+import com.zwp.usercenter.common.ResultUtils;
+import com.zwp.usercenter.exception.BusinessException;
 import com.zwp.usercenter.model.domain.User;
 import com.zwp.usercenter.model.domain.request.UserLoginRequest;
 import com.zwp.usercenter.model.domain.request.UserRegisterRequest;
@@ -31,66 +35,72 @@ public class UserController {
 
     @PostMapping("/register")
     // @RequestBody 是 Spring MVC 中用于处理 HTTP 请求体的关键注解。它负责将请求体数据转换为 Java 对象，方便 Controller 方法使用
-    public Long userRegister(@RequestBody UserRegisterRequest userRegisterRequest) {
+    public BaseResponse<Long> userRegister(@RequestBody UserRegisterRequest userRegisterRequest) {
         if (userRegisterRequest == null) {
-            return null;
+            throw new BusinessException(ErrorCode.PARAMS_ERROR);
         }
         String userAccount = userRegisterRequest.getUserAccount();
         String userPassword = userRegisterRequest.getUserPassword();
         String checkPassword = userRegisterRequest.getCheckPassword();
-        if (StringUtils.isAnyBlank(userAccount, userPassword, checkPassword)) {
-            return null;
+        String planetCode = userRegisterRequest.getPlanetCode();
+        if (StringUtils.isAnyBlank(userAccount, userPassword, checkPassword, planetCode)) {
+            throw new BusinessException(ErrorCode.NULL_ERROR);
         }
-        return userService.userRegister(userAccount, userPassword, checkPassword);
+        long result = userService.userRegister(userAccount, userPassword, checkPassword, planetCode);
+        return ResultUtils.success(result);
     }
 
     @PostMapping("/login")
-    public User userLogin(@RequestBody UserLoginRequest userLoginRequest, HttpServletRequest request) {
+    public BaseResponse<User> userLogin(@RequestBody UserLoginRequest userLoginRequest, HttpServletRequest request) {
         if (userLoginRequest == null) {
-            return null;
+            throw new BusinessException(ErrorCode.NULL_ERROR);
         }
         String userAccount = userLoginRequest.getUserAccount();
         String userPassword = userLoginRequest.getUserPassword();
         if (StringUtils.isAnyBlank(userAccount, userPassword)) {
-            return null;
+            throw new BusinessException(ErrorCode.NULL_ERROR);
         }
-        return userService.userLogin(userAccount, userPassword, request);
+        User user = userService.userLogin(userAccount, userPassword, request);
+        return ResultUtils.success(user);
     }
 
     @PostMapping("/logout")
-    public Integer userLogout(HttpServletRequest request) {
+    public BaseResponse<Integer> userLogout(HttpServletRequest request) {
         if (request == null) {
-            return null;
+            throw new BusinessException(ErrorCode.NULL_ERROR);
         }
-        return userService.userLogout(request);
+        int result = userService.userLogout(request);
+        return ResultUtils.success(result);
     }
 
     @GetMapping("/current")
-    public User getCurrentUser(HttpServletRequest request) {
+    public BaseResponse<User> getCurrentUser(HttpServletRequest request) {
         Object userObj = request.getSession().getAttribute(USER_LOGIN_STATE); // 获取用户的登录态
         User currentUser = (User) userObj;
         if (currentUser == null) {
-            return null;
+            throw new BusinessException(ErrorCode.NULL_ERROR);
         }
         Long userId = currentUser.getId();
         User user = userService.getById(userId);
-        return userService.getSafetyUser(user);
+        User safetyUser = userService.getSafetyUser(user);
+        return ResultUtils.success(safetyUser);
         // Session 中的 currentUser 可能过时: currentUser 对象是从 HttpSession 中获取的。Session 是一种缓存机制，用户登录信息会被存储在 Session 中，以便在后续请求中快速识别用户身份，而无需每次都重新验证。
         // 数据库数据可能已更新: 在用户登录后，数据库中的用户信息可能发生变化（例如，用户修改了个人资料、权限被更改、账户状态被禁用等等）。Session 中存储的 currentUser 对象可能没有反映这些最新的数据库更改。
         // userService.getById(userId) 重新从数据库获取最新数据: 通过 userService.getById(userId)，代码会根据从 Session 中获取的 userId 再次查询数据库。这确保了返回的 user 对象总是最新的数据库记录，反映了用户信息的最新状态。
     }
 
     @GetMapping("/search")
-    public List<User> searchUsers(String username, HttpServletRequest request) {
+    public BaseResponse<List<User>> searchUsers(String username, HttpServletRequest request) {
         if (!isAdmin(request)) {
-            return new ArrayList<>();
+            throw new BusinessException(ErrorCode.PARAMS_ERROR);
         }
         QueryWrapper<User> userQueryWrapper = new QueryWrapper<>();
         if (StringUtils.isNotBlank(username)) {
             userQueryWrapper.like("username", username);
         }
         List<User> userList = userService.list(userQueryWrapper);
-        return userList.stream().map(user -> userService.getSafetyUser(user)).collect(Collectors.toList());
+        List<User> list = userList.stream().map(user -> userService.getSafetyUser(user)).collect(Collectors.toList());
+        return ResultUtils.success(list);
         /* stream() 方法将 userList 转换为一个 Stream (流)。Stream 是 Java 8 引入的用于处理集合数据的抽象概念，它允许进行函数式风格的操作。
          map() 是 Stream 的一个 中间操作 (intermediate operation)。它会将流中的每个元素 转换 成另一个元素。
          user -> { ... } 是一个 Lambda 表达式，它定义了转换的逻辑。对于流中的每个 user 对象，这段 Lambda 表达式会被执行
@@ -99,14 +109,15 @@ public class UserController {
     }
 
     @PostMapping("/delete")
-    public boolean deleteUsers(@RequestBody long id, HttpServletRequest request) {
+    public BaseResponse<Boolean> deleteUsers(@RequestBody long id, HttpServletRequest request) {
         if (!isAdmin(request)) {
-            return false;
+            throw new BusinessException(ErrorCode.NO_AUTH);
         }
         if (id <= 0) {
-            return false;
+            throw new BusinessException(ErrorCode.PARAMS_ERROR);
         }
-        return userService.removeById(id); // mybatis-plus的逻辑删除，更新为已删除状态
+        boolean b = userService.removeById(id);// mybatis-plus的逻辑删除，更新为已删除状态
+        return ResultUtils.success(b);
     }
 
     /**
