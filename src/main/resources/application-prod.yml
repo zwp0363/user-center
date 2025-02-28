@@ -8,3 +8,6 @@ spring:
   # session失效时间
   session:
     timeout: 86400
+# 本机上所有可用的 IPv4 网络接口,通常对外提供 Web 服务
+server:
+  address: 0.0.0.0
