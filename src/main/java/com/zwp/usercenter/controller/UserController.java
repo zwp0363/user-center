@@ -1,6 +1,7 @@
 package com.zwp.usercenter.controller;
 
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
+import com.baomidou.mybatisplus.core.metadata.IPage;
 import com.zwp.usercenter.common.BaseResponse;
 import com.zwp.usercenter.common.ErrorCode;
 import com.zwp.usercenter.common.ResultUtils;
@@ -11,6 +12,7 @@ import com.zwp.usercenter.model.domain.request.UserRegisterRequest;
 import com.zwp.usercenter.service.UserService;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
+import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import org.springframework.util.CollectionUtils;
 import org.springframework.web.bind.annotation.*;
 
@@ -107,6 +109,13 @@ public class UserController {
          user -> { ... } 是一个 Lambda 表达式，它定义了转换的逻辑。对于流中的每个 user 对象，这段 Lambda 表达式会被执行
          collect() 是 Stream 的一个 终端操作 (terminal operation)。它会 收集 流中的元素，并将它们 汇总成一个结果。
          Collectors.toList() 是 Collectors 类提供的一个静态方法，它会创建一个 Collector，用于将流中的元素收集到一个 新的 List 中。*/
+    }
+
+    @GetMapping("/recommend")
+    public BaseResponse<Page<User>> recommendUsers(long pageSize, long pageNum, HttpServletRequest request) {
+        QueryWrapper<User> queryWrapper = new QueryWrapper<>();
+        Page<User> userList = userService.page(new Page<>(pageNum, pageSize), queryWrapper);
+        return ResultUtils.success(userList);
     }
 
     @GetMapping("/search/tags")
