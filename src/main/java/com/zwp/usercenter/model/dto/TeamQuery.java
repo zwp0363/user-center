@@ -1,0 +1,44 @@
+package com.zwp.usercenter.model.dto;
+
+import com.zwp.usercenter.common.PageRequest;
+import lombok.Data;
+import lombok.EqualsAndHashCode;
+
+/**
+ * 队伍查询封装类
+ */
+@EqualsAndHashCode(callSuper = true)
+// callSuper = true: 表示在生成 equals() 和 hashCode() 方法时，需要包含父类 (PageRequest) 的字段
+@Data
+public class TeamQuery extends PageRequest { // TeamQuery 类 拥有 PageRequest 类所有的字段和方法 (例如 pageSize 和 pageNum)
+    /**
+     * id
+     */
+    private Long id;
+
+    /**
+     * 队伍名称
+     */
+    private String name;
+
+    /**
+     * 描述
+     */
+    private String description;
+
+    /**
+     * 最大人数
+     */
+    private Integer maxNum;
+
+
+    /**
+     * 用户id
+     */
+    private Long userId;
+
+    /**
+     * 0 - 公开，1 - 私有，2 - 加密
+     */
+    private Integer status;
+}

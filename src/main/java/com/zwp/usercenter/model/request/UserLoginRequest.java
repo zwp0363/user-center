@@ -1,4 +1,4 @@
-package com.zwp.usercenter.model.domain.request;
+package com.zwp.usercenter.model.request;
 
 import lombok.Data;
 
