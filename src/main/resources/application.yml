@@ -3,6 +3,9 @@ spring:
     active: dev
   application:
     name: user-center
+    jackson:
+      date-format: yyyy-MM-dd
+      time-zone: Asia/Shanghai
   # DataSource Config
   datasource:
     driver-class-name: com.mysql.jdbc.Driver

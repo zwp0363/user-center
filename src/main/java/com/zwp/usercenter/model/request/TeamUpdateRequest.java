@@ -1,6 +1,7 @@
 package com.zwp.usercenter.model.request;
 
 import lombok.Data;
+import org.springframework.format.annotation.DateTimeFormat;
 
 import java.io.Serializable;
 import java.util.Date;
@@ -31,7 +32,9 @@ public class TeamUpdateRequest implements Serializable {
     /**
      * 过期时间
      */
+    @DateTimeFormat(pattern = "yyyy-MM-dd")
     private Date expireTime;
+
 
     /**
      * 0 - 公开，1 - 私有，2 - 加密

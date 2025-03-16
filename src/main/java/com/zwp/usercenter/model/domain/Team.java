@@ -4,6 +4,7 @@ import com.baomidou.mybatisplus.annotation.*;
 
 import java.util.Date;
 import lombok.Data;
+import org.springframework.format.annotation.DateTimeFormat;
 
 /**
  * 队伍
@@ -36,6 +37,7 @@ public class Team {
     /**
      * 过期时间
      */
+    @DateTimeFormat(pattern = "yyyy-MM-dd")
     private Date expireTime;
 
     /**
