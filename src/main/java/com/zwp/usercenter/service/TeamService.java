@@ -5,6 +5,7 @@ import com.zwp.usercenter.model.domain.Team;
 import com.zwp.usercenter.model.domain.User;
 import com.zwp.usercenter.model.dto.TeamQuery;
 import com.zwp.usercenter.model.request.TeamJoinRequest;
+import com.zwp.usercenter.model.request.TeamQuitRequest;
 import com.zwp.usercenter.model.request.TeamUpdateRequest;
 import com.zwp.usercenter.model.vo.TeamUserVO;
 
@@ -48,4 +49,19 @@ public interface TeamService extends IService<Team> {
      * @return
      */
     Boolean joinTeam(TeamJoinRequest teamJoinRequest, User loginUser);
+
+    /**
+     * 退出队伍
+     * @param teamQuitRequest
+     * @param loginUser
+     * @return
+     */
+    Boolean quitTeam(TeamQuitRequest teamQuitRequest, User loginUser);
+
+    /**
+     * 删除（解散）队伍
+     * @param id
+     * @return
+     */
+    boolean deleteTeam(long id, User loginUser);
 }
