@@ -82,10 +82,10 @@ public class TeamServiceImpl extends ServiceImpl<TeamMapper, Team>
         if (TeamStatusEnum.SECRET.equals(statusEnum) && (StringUtils.isBlank(password)||password.length() > 32)) {
                 throw new BusinessException(ErrorCode.PARAMS_ERROR, "密码设置不正确");
             }
-        //   6.超时时间 > 当前时间
+        //   6.过期时间 > 当前时间
         Date expireTime = team.getExpireTime();
         if (new Date().after(expireTime)) {
-            throw new BusinessException(ErrorCode.PARAMS_ERROR, "超时时间 > 当前时间");
+            throw new BusinessException(ErrorCode.PARAMS_ERROR, "过期时间 < 当前时间");
         }
         //   7.校验用户最多创建5个队伍
         QueryWrapper<Team> queryWrapper = new QueryWrapper<>();
@@ -122,6 +122,10 @@ public class TeamServiceImpl extends ServiceImpl<TeamMapper, Team>
             Long id = teamQuery.getId();
             if (id != null && id > 0) {
                 queryWrapper.eq("id", id);
+            }
+            List<Long> idList = teamQuery.getIdList();
+            if (!CollectionUtils.isEmpty(idList)) {
+                queryWrapper.in("id", idList);
             }
             String searchText = teamQuery.getSearchText();
             if (StringUtils.isNotBlank(searchText)) {

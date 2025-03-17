@@ -4,6 +4,8 @@ import com.zwp.usercenter.common.PageRequest;
 import lombok.Data;
 import lombok.EqualsAndHashCode;
 
+import java.util.List;
+
 /**
  * 队伍查询封装类
  */
@@ -15,6 +17,11 @@ public class TeamQuery extends PageRequest { // TeamQuery 类 拥有 PageRequest
      * id
      */
     private Long id;
+
+    /**
+     * id列表
+     */
+    private List<Long> idList;
 
     /**
      * 队伍名称
