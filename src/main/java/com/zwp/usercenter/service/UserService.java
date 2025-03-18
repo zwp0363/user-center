@@ -1,7 +1,9 @@
 package com.zwp.usercenter.service;
 
+import com.zwp.usercenter.common.BaseResponse;
 import com.zwp.usercenter.model.domain.User;
 import com.baomidou.mybatisplus.extension.service.IService;
+import com.zwp.usercenter.model.vo.UserVO;
 
 import javax.servlet.http.HttpServletRequest;
 import java.util.List;
@@ -68,7 +70,25 @@ public interface UserService extends IService<User> {
      */
     User getLoginUser(HttpServletRequest request);
 
+    /**
+     * 是否为管理员
+     * @param request
+     * @return
+     */
     boolean isAdmin(HttpServletRequest request);
 
+    /**
+     * 是否为管理员
+     * @param loginUser
+     * @return
+     */
     boolean isAdmin(User loginUser);
+
+    /**
+     * 匹配用户
+     * @param num
+     * @param loginUser
+     * @return
+     */
+    List<User> matchUsers(long num, User loginUser);
 }

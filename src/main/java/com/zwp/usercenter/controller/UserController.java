@@ -8,6 +8,7 @@ import com.zwp.usercenter.exception.BusinessException;
 import com.zwp.usercenter.model.domain.User;
 import com.zwp.usercenter.model.request.UserLoginRequest;
 import com.zwp.usercenter.model.request.UserRegisterRequest;
+import com.zwp.usercenter.model.vo.UserVO;
 import com.zwp.usercenter.service.UserService;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.StringUtils;
@@ -176,4 +177,18 @@ public class UserController {
         return ResultUtils.success(b);
     }
 
+    /**
+     * 获取最匹配的用户
+     * @param num
+     * @param request
+     * @return
+     */
+    @GetMapping("/match")
+    public BaseResponse<List<User>> matchUsers(long num, HttpServletRequest request) {
+        if (num <= 0 || num > 20) {
+            throw new BusinessException(ErrorCode.PARAMS_ERROR);
+        }
+        User loginUser = userService.getLoginUser(request);
+        return ResultUtils.success(userService.matchUsers(num, loginUser));
+    }
 }
