@@ -7,7 +7,6 @@ import com.google.gson.reflect.TypeToken;
 import com.zwp.usercenter.common.ErrorCode;
 import com.zwp.usercenter.exception.BusinessException;
 import com.zwp.usercenter.model.domain.User;
-import com.zwp.usercenter.model.vo.UserVO;
 import com.zwp.usercenter.service.UserService;
 import com.zwp.usercenter.mapper.UserMapper;
 import com.zwp.usercenter.utils.AlgorithmUtils;
@@ -25,7 +24,6 @@ import java.util.function.Function;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import java.util.stream.Collectors;
-import java.util.stream.Stream;
 
 import static com.zwp.usercenter.constant.UserConstant.ADMIN_ROLE;
 import static com.zwp.usercenter.constant.UserConstant.USER_LOGIN_STATE;
@@ -357,7 +355,7 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User>
         }
         QueryWrapper<User> queryWrapper = new QueryWrapper<>();
         // 拼接 and 查询
-        // like '%jJava%' and like '%Python%'
+        // like '%Java%' and like '%Python%'
         for (String tagName : tagNameList) {
             queryWrapper = queryWrapper.like("tags", tagName);// 每次like都会自动拼接
         }

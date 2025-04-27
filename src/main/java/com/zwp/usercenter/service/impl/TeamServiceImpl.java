@@ -3,7 +3,6 @@ package com.zwp.usercenter.service.impl;
 import java.util.Date;
 
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
-import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
 import com.zwp.usercenter.common.ErrorCode;
 import com.zwp.usercenter.exception.BusinessException;
@@ -27,7 +26,6 @@ import org.redisson.api.RedissonClient;
 import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.redis.core.RedisTemplate;
-import org.springframework.data.redis.core.ValueOperations;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.util.CollectionUtils;
@@ -100,12 +98,12 @@ public class TeamServiceImpl extends ServiceImpl<TeamMapper, Team>
         if (new Date().after(expireTime)) {
             throw new BusinessException(ErrorCode.PARAMS_ERROR, "过期时间 < 当前时间");
         }
-        //   7.校验用户最多创建5个队伍
-        QueryWrapper<Team> queryWrapper = new QueryWrapper<>();
-        queryWrapper.eq("userId", userId);
-        long hasTeamNum = this.count(queryWrapper); //调用当前对象ServiceImpl的 count 方法
-        if (hasTeamNum >= 5) {
-            throw new BusinessException(ErrorCode.PARAMS_ERROR, "用户最多创建5个队伍");
+        //   7.校验用户最多创建和加入5个队伍
+        QueryWrapper<UserTeam> userTeamQueryWrapper = new QueryWrapper<>();
+        userTeamQueryWrapper.eq("userId", userId);
+        long hasJoinNum = userTeamService.count(userTeamQueryWrapper);
+        if (hasJoinNum > 5) {
+            throw new BusinessException(ErrorCode.PARAMS_ERROR, "最多创建和加入5个队伍");
         }
         //   8.插入队伍信息到队伍表
         team.setId(null);
@@ -155,14 +153,12 @@ public class TeamServiceImpl extends ServiceImpl<TeamMapper, Team>
             // 根据状态查询
             Integer status = teamQuery.getStatus();
             TeamStatusEnum statusEnum = TeamStatusEnum.getEnumByValue(status);
-            if (statusEnum == null) {
-                statusEnum = TeamStatusEnum.PUBLIC;
-            }
             if (!isAdmin && statusEnum.equals(TeamStatusEnum.PRIVATE)) {
                 throw new BusinessException(ErrorCode.NO_AUTH);
             }
-            queryWrapper.eq("status", statusEnum.getValue());
-
+            if (statusEnum != null) {
+                queryWrapper.eq("status", statusEnum.getValue());
+            }
             // 查询最大人数相等的
             Integer maxNum = teamQuery.getMaxNum();
             if (maxNum != null && maxNum > 0) {
@@ -287,7 +283,7 @@ public class TeamServiceImpl extends ServiceImpl<TeamMapper, Team>
                     }
                     // 已加入队伍的人数
                     long teamHasJoinNum = this.countTeamUserByTeamId(teamId);
-                    if (teamHasJoinNum > team.getMaxNum()) {
+                    if (teamHasJoinNum >= team.getMaxNum()) {
                         throw new BusinessException(ErrorCode.NULL_ERROR, "队伍已满");
                     }
                     // 修改队伍信息
@@ -312,6 +308,7 @@ public class TeamServiceImpl extends ServiceImpl<TeamMapper, Team>
     }
 
     @Override
+    @Transactional(rollbackFor = Exception.class)
     public Boolean quitTeam(TeamQuitRequest teamQuitRequest, User loginUser) {
         if (teamQuitRequest == null) {
             throw new BusinessException(ErrorCode.PARAMS_ERROR);
