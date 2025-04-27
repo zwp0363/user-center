@@ -27,6 +27,6 @@
         avatarUrl,gender,userPassword,
         phone,email,userStatus,
         createTime,updateTime,isDelete,
-        userRole
+        userRole.tags
     </sql>
 </mapper>
